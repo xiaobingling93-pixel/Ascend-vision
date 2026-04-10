@@ -4,9 +4,10 @@
 
 运行以下命令初始化CANN环境变量。
 
-```
+```bash
 source /usr/local/Ascend/ascend-toolkit/set_env.sh
 ```
+
 以上命令以root用户安装后的默认路径为例，请用户根据set\_env.sh的实际路径进行替换。
 
 > [!NOTE]  

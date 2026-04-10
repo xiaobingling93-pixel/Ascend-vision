@@ -1,4 +1,5 @@
 # 特性介绍
+
 ## 使用cv2图像处理后端
 
 1. Opencv-python版本推荐（推荐使用opencv-python=4.6.0）。
@@ -6,8 +7,6 @@
    ```python
     pip3 install opencv-python==4.6.0.66
    ```
-
-
 
 2. 脚本适配。
 
@@ -26,9 +25,7 @@
     train_dataset = torchvision.datasets.ImageFolder(...)
     ...
    ```
-
-   
-
+  
 3. cv2算子适配原则。
 
    - transforms方法实际调用pillow算子以及tensor算子，cv2算子调用接口与pillow算子调用接口保持一致。
@@ -40,7 +37,9 @@
          "Using cv2 backend, the image data type should be numpy.ndarray or PIL.Image.Image. Unexpected type {}".format(type(img)))
     
      ```
+
    - 注意如果输入是Image.Image格式，会造成数据转换的额外开销，性能有所下降。
+
      ``` python
      warnings.warn(
             "Performance Notice: PIL Image (Image.Image) input detected. "
@@ -57,7 +56,6 @@
      ```
 
    - cv2算子插值底层实现和pillow插值底层实现略有差异，存在图像处理结果差异，因此由插值方式导致的图像处理结果不一致情况为正常现象，通常两者结果以余弦相似度计算，结果近似在99%以内。
-
 
 4. cv2算子支持列表以及性能加速情况。
    
@@ -99,28 +97,30 @@
 1. 脚本适配。
 
    通过以下方式使能DVPP加速，在导入torchvision相关包后导入torchvision_npu包。
-```python
-   # 使能DVPP图像处理后端
-   ...
-   import torch
-   import torch_npu
-   import torchvision
-   import torchvision_npu # 导入torchvision_npu包
 
-   torchvision.set_image_backend('npu') # 设置图像处理后端为npu，即使能DVPP加速
-   ...
-   npu_output = torchvision.datasets.folder.default_loader(...)
-   ```
+   ```python
+      # 使能DVPP图像处理后端
+      ...
+      import torch
+      import torch_npu
+      import torchvision
+      import torchvision_npu # 导入torchvision_npu包
+
+      torchvision.set_image_backend('npu') # 设置图像处理后端为npu，即使能DVPP加速
+      ...
+      npu_output = torchvision.datasets.folder.default_loader(...)
+      ```
 
 2. 执行单元测试脚本。
 
-   ```
+   ```bash
    cd test/test_npu/
    python test_default_loader.py
    ```
+
    输出结果OK即为验证成功。
 
-3. DVPP支持列表
+3. DVPP支持列表。
 
    为如下图像/视频处理方法提供了DVPP处理能力，在设置图像处理后端为NPU时，使能DVPP加速。支持接口列表如下表2所示。
 
@@ -154,10 +154,11 @@
 
 2. 执行单元测试脚本。
 
-   ```
+   ```bash
    cd test/test_npu/
    python test_read_video.py
    ```
+
    输出结果OK即为验证成功。
 
 3. DVPP支持列表
@@ -171,9 +172,11 @@
    | read_video | 底层实现有差异，误差±3左右 | 仅支持h264/h265编码格式 |
 
 ## 数据预处理使用DVPP的限制
+
 在DVPP使用场景中，如果DVPP搭配PyTorch的Dataloader进行数据预处理，存在如下场景使用限制。
 
 限制：使用dataloader多进程加载数据时（单进程不影响），全局作用域中不能包含涉及NPU初始化的代码，以下面代码为例。
+
    ```python
    # 此用例当前TORCH_NPU套件不支持
    ...
@@ -191,7 +194,9 @@
       dataloader(...,num_workers=4,....)  # 使用多进程数据预处理
       ...
    ```
+
 规避方法：当使能DVPP加载数据且dataloader中使用多进程情况下，应避免在全局作用域进行涉及NPU初始化的操作，可将相应代码放在主函数中，以下面代码为例。
+
    ```python
    # 规避方法
    ...
@@ -224,13 +229,16 @@
    | roi_align     | √    |
    | roi_pool      | √    |
    
-   注：我们在v0.xx.x-7.0.0版本后，修复了nms算子在scores参数存在负数情况下的精度问题，如遇此场景，请按[版本配套表](#版本配套表)安装各个组件。
+   注：我们在v0.xx.x-7.0.0版本后，修复了nms算子在scores参数存在负数情况下的精度问题，如遇此场景，请按[版本配套表](../../README.zh.md#版本说明)安装各个组件。
 
 ## 使用CPU进行图像处理
+
 使用c++多线程实现算子在使用CPU进行图像处理时的性能优化，以达到加速的目的。
+
 1. 脚本适配
 
    通过以下方式使能CPU多线程加速图像处理，在导入torchvision相关包前导入torchvision_npu包，在使用前设置图像处理后端为`moal`，以Normalize为例，当输入为cpu侧数据类型为`float`时，图像处理后端为`moal`后会使用该优化方案对该算子进行优化
+
    ```python
    # 使用优化后的Normalize
    ...
@@ -245,10 +253,11 @@
    
 2. 执行单元测试脚本
    
-   ```
+   ```bash
    cd test/test_cpu/
    python -m unittest discover
    ```
+
    输出结果OK即为验证成功。
 
 3. CPU优化算子支持列表以及性能加速情况
@@ -262,13 +271,14 @@
    | to_tensor         | √（只接受uint 8类型的tensor） | 341.24      | 173.15      | 97.08%      |
    | normalize         | √（只接受float类型的tensor）  | 14.67       | 5.19        | 182.66%     |
 
-
 ## 使用鲲鹏CPU进行视频处理
+
 基于`kunepng`向量化指令，使能多线程，实现算子在使用`鲲鹏CPU`进行视频处理时的性能优化，以达到加速的目的。
 
 1. 脚本适配
    
    设定`torchvision.set_video_backend()`和环境变量`TORCHVISION_OMP_NUM_THREADS`以激活`torchvision.io.read_video`加速分支。
+
    ```python
    ...
    import os
@@ -282,6 +292,7 @@
    ```
    
    设定环境变量`TORCHVISION_OMP_NUM_THREADS`以激活`torchvision.transforms.v2.functional.uniform_temporal_subsample_video`加速分支。
+
    ```python
    ...
    import os
@@ -294,13 +305,13 @@
    ...
    ```
 
-
 2. 执行单元测试
 
    ```bash
    cd test/test_kunpeng/
    python -m unittest discover
    ```
+
    输出结果OK即为验证成功。
 
 3. `鲲鹏CPU`优化算子支持列表以及性能加速情况
@@ -314,6 +325,4 @@
    | read_video                       | √（针对`yuv420p,yuvj420p`有向量化加速） | 1657.05     | 737.20      | 124.77% |
    | uniform_temporal_subsample_video | √          | 12.59       | 5.03        | 150.29% |
 
-
-
-**Torchvision Adapter适配NPU的方案见[适配指导](docs/适配指导.md)。**
+**Torchvision Adapter适配NPU的方案见[适配指导](适配指导.md)。**

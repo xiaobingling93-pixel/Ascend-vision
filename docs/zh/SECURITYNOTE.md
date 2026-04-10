@@ -1,15 +1,19 @@
 # 安全声明
 
 ## 系统安全加固
+
 推荐运行环境ASLR级别为2，大部分系统默认为2。
-   ```
+
+   ```bash
    查看ASLR级别
     cat /proc/sys/kernel/randomize_va_space
 
    设置ASLR级别为2
     echo 2 > /proc/sys/kernel/randomize_va_space
    ```
+
 ## 运行用户建议
+
 出于安全性及权限最小化角度考虑，不建议使用root等管理员类型账户使用torchvision_npu。
 
 ## 文件权限控制
@@ -50,14 +54,14 @@
    
    2. Torchvision和torchvision_npu在运行异常时会退出进程并打印报错信息，属于正常现象。建议用户根据报错提示定位具体错误原因，包括通过设定算子同步执行、查看CANN日志、解析生成的Core Dump文件等方式。
 
-
 ## 公网地址
+
 **表 6** torchvision_npu的配置文件和脚本中存在的公网地址
 
 | 类型 | 开源代码地址| 文件名  | 公网IP地址/公网URL地址/域名/邮箱地址            | 用途说明 |
 | ----- | --------- | ----------- |-----------------------------------| ------- |
-| 开发引入 | 不涉及 | vision/setup.cfg | https://gitcode.com/ascend/vision | 用于打包whl的url入参 |
-
+| 开发引入 | 不涉及 | vision/setup.cfg | <https://gitcode.com/ascend/vision> | 用于打包whl的url入参 |
 
 ## 公开接口
+
 torchvision_npu 不对外暴露任何公开接口。为使torchvision在NPU上运行，我们通过Monkey Patch技术对torchvision原有函数的实现进行替换。用户使用原生torchvision库的接口，运行时执行torchvision_npu库中替换的函数实现。
